@@ -35,8 +35,8 @@ Along the way, you'll get introduced to the following concepts:
 If you are migrating an existing Red Hat Insights application to Kessel, follow [Migrate from RBAC v1 to RBAC v2](/docs/building-with-kessel/how-to/migrate-from-rbac-v1-to-v2/) which is a guide that will walk you through all the steps of this specific use-case.
 </Aside>
 
-<Aside type="caution" title="Under Construction">Many aspects of Kessel are under construction, and this guide contains various workarounds and temporary solutions.
-Take a look at the [roadmap](#next-steps-and-roadmap) to learn more about where we're going.</Aside>
+<Aside type="note" title="Some assembly required">Parts of this workflow are evolving — schema configuration, RBAC management, and the local development setup are all being simplified.
+See the [roadmap](#where-are-we-going) for details on what's changing.</Aside>
 
 ## Quick start
 
@@ -186,7 +186,7 @@ It will have assignable permissions which leverage the common Kessel RBAC model.
 <Tabs>
   <TabItem label="Docker compose">
     <Steps>
-    1. **Start Kessel Inventory**. Inventory is the service that stores the resources and their relationships.
+    1. **Start Kessel Inventory**. Inventory is the service that stores resources, relationships, and handles access control.
 
         ```bash
         git clone git@github.com:project-kessel/inventory-api.git
@@ -194,20 +194,14 @@ It will have assignable permissions which leverage the common Kessel RBAC model.
         cp -r ../document data/schema/resources/
         # preload the schema cache with the document resource
         go run main.go preload-schema
-        make inventory-up-relations-ready
+        make inventory-up
         ```
 
-    2. **Start Relations and SpiceDB**. These form the underlying relationship storage and query engine based on relationship-based access control.
-
-        ```bash
-        git clone git@github.com:project-kessel/relations-api.git
-        cd relations-api
-        cp ../schema.zed deploy/schema.zed
-        make relations-api-up
-        ```
-
-        <Aside type="tip">
-        If you modify your schema, run `make relations-api-down`, then copy the updated `schema.zed` as above and run `make relations-api-up` again.
+        <Aside type="note">
+        The local Docker setup runs with `allow-all` authorization — permission checks will always return allowed without
+        requiring SpiceDB. Resource reporting and checking work end-to-end, but the RBAC setup scripts (create role / create
+        role binding) require the Relations API gRPC service, which is being merged into Inventory.
+        For full end-to-end authorization testing, use the **bonfire** tab.
         </Aside>
     </Steps>
 
@@ -215,7 +209,7 @@ It will have assignable permissions which leverage the common Kessel RBAC model.
 
   <TabItem label="bonfire">
     <Aside title="Red Hatter?">
-    TODO: If you need information on ephemeral cluster access, go here.
+    For information on ephemeral cluster access and setup, see the [bonfire documentation](https://github.com/RedHatInsights/bonfire).
     </Aside>
     <Steps>
     1. Start Kessel Inventory
@@ -242,7 +236,6 @@ It will have assignable permissions which leverage the common Kessel RBAC model.
 
         ```bash
         oc port-forward svc/kessel-inventory-api <your local port>:9000 -n <Name of current project from step 3>
-        oc port-forward svc/kessel-relations-api <your local port>:9000 -n <Name of current project from step 3>
         ```
 
     </Steps>
@@ -393,9 +386,9 @@ We're open to contributions! Check us out on GitHub at [project-kessel](https://
 
 ### Where are we going?
 
-| Feature                      | Today                                                                                       | Roadmap / What's Next                                                                              |
+| Feature                      | Today                                                                                       | What's Next                                                                                        |
 |------------------------------|---------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
-| **Schema Language**          | Use multiple files and languages for schema, with overlap and duplicated information        | Unify all these into a single schema language—no duplication or repeated information               |
+| **Schema Language**          | Resource attributes (JSON config) and permissions (KSL) use separate files                  | Unified schema language that combines attributes and permissions — no duplication                  |
 | **Configuration Method**     | Edit schema and config via files                                                            | Configure everything at runtime via an API                                                         |
-| **RBAC Management**          | Use temporary scripts or the pre-Kessel RBAC v1 API                                         | Use an RBAC management API (v2) to encapsulate access grants and workspace management              |
-| **Services to Run**          | Must run the Relations API separately alongside Inventory and SpiceDB                       | Relations API will be merged with Inventory—just run Inventory and SpiceDB                         |
+| **RBAC Management**          | Use temporary scripts or the pre-Kessel RBAC v1 API                                         | RBAC management API (v2) to encapsulate access grants and workspace management                    |
+| **Services to Run**          | Relations API merger into Inventory is in progress                                           | Just run Inventory and SpiceDB — single service for resources, relationships, and access control   |
