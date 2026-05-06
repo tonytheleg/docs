@@ -1,5 +1,6 @@
 ---
 title: Kessel Asset Inventory APIs
+pagefind: false
 ---
 
 > ⚠️ **Deprecated**: This document references the v1beta1 API which is deprecated. Please refer to the v1beta2 API documentation for the current API format.
