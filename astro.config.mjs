@@ -64,6 +64,7 @@ const baseStarlightConfig = {
           label: "Reference",
           collapsed: true,
           items: [
+            'building-with-kessel/reference/sdks',
             'building-with-kessel/reference/schema',
             'building-with-kessel/reference/glossary',
             {

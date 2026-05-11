@@ -1,0 +1,57 @@
+---
+title: SDKs
+description: Available Kessel SDKs, installation links, and protocol support.
+sidebar:
+  order: 0
+---
+
+import { LinkCard } from '@astrojs/starlight/components';
+import { Aside } from '@astrojs/starlight/components';
+
+Kessel provides official SDKs for multiple languages. Each SDK handles connection management, authentication, and serialization so you can focus on integrating with Kessel's APIs.
+
+gRPC is Kessel's primary protocol and the default for all SDKs. HTTP REST is supported as an alternative but does not cover all features (for example, streaming endpoints are gRPC-only). Use gRPC unless you have a specific reason not to.
+
+## Available SDKs
+
+| Language | Repository | Install from |
+|----------|-----------|-------------|
+| Go | [kessel-sdk-go](https://github.com/project-kessel/kessel-sdk-go) | `go get` |
+| Python | [kessel-sdk-py](https://github.com/project-kessel/kessel-sdk-py) | PyPI |
+| Java | [kessel-sdk-java](https://github.com/project-kessel/kessel-sdk-java) | Maven Central |
+| Node.js | [kessel-sdk-node](https://github.com/project-kessel/kessel-sdk-node) | npm |
+| Ruby | [kessel-sdk-ruby](https://github.com/project-kessel/kessel-sdk-ruby) | RubyGems |
+
+All SDKs follow a consistent package structure across languages. If you know one SDK, the others will feel familiar.
+
+## Getting started
+
+For installation instructions and usage examples, see the getting started guide.
+
+<LinkCard title="Getting started" href="/docs/start-here/getting-started/" />
+
+For CI/CD setup including native compilation and Docker builds, see the SDK CI guide.
+
+<LinkCard title="Setting up SDKs for CI" href="/docs/building-with-kessel/how-to/setup-sdk-for-ci/" />
+
+## SDK package structure
+
+Each SDK organizes its code into consistent packages:
+
+- **`{service}.{version}`** contains generated client code for a specific API (e.g. `inventory.v1beta2`). This is where you find `ClientBuilder` for creating service clients.
+- **`grpc`** contains gRPC-specific utilities like channel creation and authentication middleware.
+- **`http`** contains HTTP transport utilities for services that support REST.
+- **`middleware`** contains transport-agnostic utilities such as token caching.
+- **`rbac.v2`** contains helpers for constructing common RBAC resource types.
+- **`console`** contains helpers for ConsoleDot integration.
+
+<Aside type="note" title="For SDK contributors">
+  The full package specifications, including method signatures, interface contracts, and implementation rules, are maintained in the [Client SDK Specification](/docs/contributing/client-libraries/). If you are building or contributing to a Kessel SDK, start there.
+</Aside>
+
+## API references
+
+For the underlying API definitions that the SDKs wrap:
+
+- **gRPC API** (primary): Browse the protobuf definitions on the [Buf Schema Registry](https://buf.build/project-kessel/inventory-api/docs/main:kessel.inventory.v1beta2)
+- **HTTP REST API** (alternative): See the [OpenAPI reference](/docs/building-with-kessel/reference/http-api/). Not all gRPC features are available over HTTP.
