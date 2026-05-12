@@ -281,14 +281,27 @@ We'll start by setting up a client you can use to interact with Kessel. We have 
             <dependency>
               <groupId>org.project-kessel</groupId>
               <artifactId>kessel-sdk</artifactId>
-              <version>1.2.1</version>
+              <version>1.7.0</version>
+            </dependency>
+            <dependency>
+              <groupId>io.grpc</groupId>
+              <artifactId>grpc-netty-shaded</artifactId>
+              <version>1.77.0</version>
+              <scope>runtime</scope>
+            </dependency>
+            <dependency>
+              <groupId>com.nimbusds</groupId>
+              <artifactId>oauth2-oidc-sdk</artifactId>
+              <version>11.30.1</version>
             </dependency>
             ```
           </TabItem>
           <TabItem label="Gradle">
             ```groovy
             dependencies {
-              implementation 'org.project-kessel:kessel-sdk:1.2.1'
+              implementation 'org.project-kessel:kessel-sdk:1.6.0'
+              runtimeOnly 'io.grpc:grpc-netty-shaded:1.77.0'
+              implementation 'com.nimbusds:oauth2-oidc-sdk:11.30.1'
             }
             ```
           </TabItem>
