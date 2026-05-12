@@ -24,6 +24,10 @@ All SDKs use gRPC, which is Kessel's primary protocol.
 
 All SDKs follow a consistent package structure across languages. If you know one SDK, the others will feel familiar.
 
+<Aside type="note" title="Browser SDK">
+  A separate [kessel-sdk-browser](https://github.com/project-kessel/kessel-sdk-browser) exists for browser environments. It uses HTTP (not gRPC) and implements a subset of the API, primarily `CheckSelf` endpoints. It does not follow the standard SDK specification above. If you have a use case that requires browser-based access, reach out to the team for guidance.
+</Aside>
+
 ## Getting started
 
 For installation instructions and usage examples, see the getting started guide.
