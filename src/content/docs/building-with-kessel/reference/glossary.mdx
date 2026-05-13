@@ -11,7 +11,7 @@ This glossary defines the key terms used throughout the Kessel documentation. Te
 
 ### Resource
 
-Any addressable entity that can be modeled, queried, and governed in Kessel. In Kessel, everything is a resource: users, groups, workspaces, roles, hosts, clusters, and documents are all modeled uniformly with types, identifiers, and [relationships](#relationship). Application-specific resources are reported to Kessel through the [Inventory API](#inventory-api).
+Any addressable entity that can be modeled, queried, and governed in Kessel. In Kessel, everything is a resource: users, groups, workspaces, roles, hosts, clusters, and documents are all modeled uniformly with types, identifiers, and [relationships](#relationship). Application-specific resources are reported to Kessel through the [Inventory API](#kessel-inventory-api).
 
 See [Resources and representations](/docs/building-with-kessel/concepts/resources-representations/).
 
@@ -163,9 +163,9 @@ An API operation that returns the set of [resources](#resource) a given [subject
 
 See [Relationships and permissions](/docs/building-with-kessel/concepts/relationships-permissions/).
 
-### ListSubjects
+### StreamedListSubjects
 
-An API operation that returns the set of [subjects](#subject) who have a specified [relation](#relation) on a given [resource](#resource). Useful for answering "who has access to this resource?"
+An API operation that returns the set of [subjects](#subject) who have a specified [relation](#relation) on a given [resource](#resource). Useful for answering "who has access to this resource?" Results are streamed as they are found.
 
 See [Relationships and permissions](/docs/building-with-kessel/concepts/relationships-permissions/).
 
