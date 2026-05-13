@@ -138,7 +138,7 @@ If you choose not to use IMMEDIATE mode, consider these patterns:
 
 There are several constraints to be aware of when working with Kessel's consistency model:
 
-- **Bulk operations do not support `at_least_as_acknowledged`.** The bulk check methods (`CheckBulk`, `CheckForUpdateBulk`, `CheckSelfBulk`) span multiple resources, and looking up a consistency token per resource would be prohibitively expensive. Bulk checks use `minimize_latency` or `at_least_as_fresh`.
+- **Bulk operations do not support `at_least_as_acknowledged`.** `CheckBulk` and `CheckSelfBulk` span multiple resources, and looking up a consistency token per resource would be prohibitively expensive. These methods support `minimize_latency` or `at_least_as_fresh` only. (`CheckForUpdateBulk` is not affected by this limitation because it always uses full consistency, as described above.)
 
 - **Multi-resource scenarios require care.** If your operation touches multiple resources, each resource has its own consistency token. There is no single token that covers all of them. For cross-resource consistency, use `at_least_as_fresh` with a token that covers the latest write across all resources involved.
 
