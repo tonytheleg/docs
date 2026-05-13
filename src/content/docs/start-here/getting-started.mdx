@@ -336,6 +336,12 @@ This inherits the access granted at at the workspace level, as defined by the do
 
 Once Kessel knows about a resource (and its relationships), you can check access by virtue of checking if the user has an expected <i>relationship</i> to the resource, as defined by your schema.
 
+<Aside type="caution" title="Consistency: what to expect">
+Kessel is eventually consistent. After reporting a resource, there is a brief window (typically 100-500ms) where permission checks may not yet reflect the change. If your check returns `ALLOWED_FALSE` right after a report, that's expected.
+
+Kessel provides several ways to handle this, including fully consistent checks (`CheckForUpdate`) and write visibility modes. See the [Consistency model](/docs/building-with-kessel/concepts/consistency/) for details.
+</Aside>
+
 <CodeExamples files={gettingStartedExamples} regions="check" />
 
 ### Complete example
