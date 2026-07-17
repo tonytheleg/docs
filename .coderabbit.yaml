@@ -67,8 +67,10 @@ reviews:
           (not "write") as the verb.
 
         Error handling:
-        - Catch the SDK's gRPC error type specifically. Do not catch
-          a generic exception or error type for gRPC calls.
+        - Catch the SDK's gRPC error type specifically. If the SDK
+          does not expose a typed error class, catch generically but
+          narrow the caught value to the gRPC error type and handle
+          by status code before any other logic.
         - Do not wrap gRPC errors in custom SDK error types.
         - Match on gRPC status code, not message text. Messages
           marked "variable" change across versions.
