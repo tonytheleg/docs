@@ -4,9 +4,155 @@ knowledge_base:
   learnings:
     scope: global
   code_guidelines:
+    enabled: true
     filePatterns:
       - "**/AGENTS.md"
       - "**/CLAUDE.md"
       - "**/CONTRIBUTING.md"
       - "**/GUIDELINES.md"
       - "KESSEL-INTEGRATION-GUIDE.md"
+
+# Path instructions travel via remote_config to service provider repos.
+# Service providers inherit these by adding remote_config pointing here.
+# See KESSEL-INTEGRATION-GUIDE.md "CodeRabbit Setup for Service Providers" for details.
+#
+# Design constraints (from KSL-060):
+# - Stay under 10-12 total instructions to avoid diminishing returns
+# - Use Kessel-specific paths to avoid collisions with local configs
+# - Keep instructions actionable (things CodeRabbit can flag in a diff)
+reviews:
+  path_instructions:
+    # Kessel integration files -- detailed review rules.
+    # Matches files with "kessel" in the name (e.g. lib/kessel.py,
+    # kessel_client.go, test_kessel.py). Near-zero collision risk
+    # with service provider local configs.
+    - path: "**/*kessel*"
+      instructions: |
+        Kessel integration code. Apply these rules during review:
+
+        API version:
+        - Current version is v1beta2. Flag any v1beta1 references as
+          deprecated unless the code is explicitly marked as legacy/migration.
+
+        Client construction:
+        - Use the SDK ClientBuilder pattern. Do not construct gRPC
+          channels or stubs manually.
+        - Reuse client and channel instances across requests. Creating
+          a new channel per request wastes resources and connections.
+        - Call insecure() only for local development. Flag insecure
+          channels in production or staging code paths.
+
+        Authentication:
+        - Use OAuth2ClientCredentials from the SDK auth package.
+          Token caching and automatic refresh are built in -- do
+          not add manual token caching or refresh logic.
+        - Read credentials from environment variables or secure config,
+          never hardcoded.
+
+        Authorization checks:
+        - Use Check for read operations and permission filtering.
+        - Use CheckForUpdate for write operations and sensitive reads
+          (e.g. reading credentials). It provides stronger consistency.
+          Call it right before the write -- do not cache the result.
+        - Bulk endpoints (CheckBulk, CheckSelfBulk) can succeed at
+          the RPC level while individual items fail. Always check
+          per-item errors in the response pairs.
+        - CheckBulk accepts up to 1000 items per RPC. For larger
+          sets, batch into multiple calls.
+
+        Permission naming:
+        - Permissions follow the format {app}_{resource}_{verb}
+          (e.g. myservice_integration_view).
+        - V2 naming convention: use "view" (not "read") and "edit"
+          (not "write") as the verb.
+
+        Error handling:
+        - Catch the SDK's gRPC error type specifically. Do not catch
+          a generic exception or error type for gRPC calls.
+        - Do not wrap gRPC errors in custom SDK error types.
+        - Match on gRPC status code, not message text. Messages
+          marked "variable" change across versions.
+        - UNAVAILABLE and DEADLINE_EXCEEDED are retryable with
+          exponential backoff. INVALID_ARGUMENT, NOT_FOUND, and
+          PERMISSION_DENIED are not retryable -- fix the request.
+        - Check returning allowed=false is a successful response,
+          NOT an error. PERMISSION_DENIED means meta-authorization
+          failure (the caller cannot perform the RPC itself). Do
+          not confuse the two.
+
+        Failure handling:
+        - When Kessel is unavailable, fail closed (deny access) as
+          the secure default. Log the error for monitoring.
+        - A Kessel outage should not prevent your service from
+          creating or modifying its own resources. Report failures
+          should be logged and reconciled later, not block the
+          user's request.
+
+        Subject construction:
+        - User principals use resource_type "principal" with
+          resource_id "{domain}/{user_id}" and reporter.type "rbac".
+        - Use SDK helper functions for building subject and resource
+          references instead of constructing protobuf objects manually.
+
+        Workspace lookups:
+        - When calling RBAC workspace APIs, authenticate with the
+          service's own OAuth token. Do not relay the end-user's
+          x-rh-identity header -- the user may lack workspace
+          listing permissions.
+        - Set x-rh-rbac-org-id header for org-scoped lookups.
+
+        Resource reporting:
+        - Report resources after the database write, not before.
+          The resource must exist in your system before Kessel
+          knows about it.
+        - Include workspace_id in the common representation. This
+          connects the resource to the workspace hierarchy and
+          enables permission inheritance.
+        - ReportResource succeeds at the API level even if the
+          resource type has no matching schema in SpiceDB. The
+          failure surfaces asynchronously during replication. When
+          introducing a new resource type, verify it is defined in
+          the loaded schema or authorization checks will fail.
+        - Use write_visibility IMMEDIATE only when the caller needs
+          to Check the resource immediately after reporting it.
+          It adds 100-500ms latency.
+
+        Consistency and replication:
+        - Do not add sleep() or artificial delays after reporting
+          a resource. Use write_visibility IMMEDIATE for read-after-
+          write guarantees, or at_least_as_fresh with a consistency
+          token from a prior write for causal ordering.
+        - Replication from inventory DB to authorization graph is
+          typically 100-500ms. Design UX to handle this window
+          (optimistic UI, processing indicator) rather than blocking.
+
+        List endpoint authorization:
+        - Prefer pre-filtering with StreamedListObjects: get the
+          user's accessible workspace IDs first, then query your DB
+          with WHERE workspace_id IN (...). This scales better than
+          fetching everything and post-filtering.
+        - Use CheckBulk for batch authorization checks, not a loop
+          of individual Check calls.
+
+        Resource cleanup:
+        - Close gRPC channels and connections during shutdown to
+          prevent resource leaks and process hangs.
+
+    # Broad catch-all for files that use Kessel indirectly (e.g.
+    # config files with KESSEL_* env vars, auth modules importing
+    # Kessel types). Kept very short to minimize context overhead.
+    - path: "**"
+      instructions: |
+        If this code imports or calls a Kessel SDK package
+        (any project-kessel SDK for Go, Python, Ruby, Java, Node,
+        or Browser):
+        - Use v1beta2 API version (v1beta1 is deprecated)
+        - Use the SDK ClientBuilder for client construction
+        - Do not hardcode credentials -- use environment variables
+          or secure configuration
+        - Use Check for reads, CheckForUpdate for writes
+        - Do not add sleep() delays after reporting resources --
+          use write_visibility IMMEDIATE or consistency tokens
+        - Fail closed (deny access) when Kessel is unavailable
+        - See project-kessel/docs KESSEL-INTEGRATION-GUIDE.md for
+          full conventions

@@ -2,7 +2,7 @@
 
 This guide consolidates consumer and integrator knowledge for teams building on the Kessel platform. It covers API contracts, SDK conventions, authentication, authorization, database schema, data replication, and monitoring patterns.
 
-This content is leveraged by CodeRabbit for context during PR reviews. Eventually it will be distilled into CodeRabbit `path_instructions` for targeted review guidance in service provider code bases.
+This content is leveraged by CodeRabbit for context during PR reviews. Key rules are distilled into `path_instructions` in this repo's `.coderabbit.yaml`, which service providers can inherit via `remote_config` (see "CodeRabbit Setup for Service Providers" below).
 
 ## Platform Architecture
 
@@ -538,3 +538,38 @@ Kessel Inventory writes two outbox event types per resource operation. After Deb
 - All SDK examples demonstrate the same scenario with identical resource data across languages.
 - Async messaging examples (Kafka consumers, outbox pattern) use the Go `confluent-kafka-go` library as the reference implementation.
 - SASL authentication with SCRAM-SHA-512 is the standard for Kafka consumers.
+
+## CodeRabbit Setup for Service Providers
+
+Service providers integrating with Kessel can opt in to Kessel-aware CodeRabbit reviews by inheriting this repo's configuration. This delivers Kessel integration rules (API version, ClientBuilder usage, error handling, auth patterns) to PRs in your repo without maintaining Kessel-specific guideline files locally.
+
+### Setup
+
+Add the following to your repo's `.coderabbit.yaml` (create the file if it does not exist):
+
+```yaml
+inheritance: true
+remote_config:
+  repository: "project-kessel/docs"
+  ref: "main"
+  path: ".coderabbit.yaml"
+```
+
+With `inheritance: true`, CodeRabbit deep-merges the remote and local configs:
+
+- **Scalar settings** (language, profile): local wins.
+- **Object settings** (reviews.auto_review): deep merge, local properties override matching remote properties.
+- **Array settings** (path_instructions): local entries first, unique remote entries appended, deduplicated by path key.
+
+Your existing review rules remain intact. Kessel `path_instructions` are appended for paths you have not already defined. If you have a local rule for the same path key, your local rule takes precedence.
+
+### What you get
+
+Two sets of review rules are inherited:
+
+1. **`**/*kessel*`** -- Detailed rules applied to files with "kessel" in the name. Covers API version, ClientBuilder usage, auth, error handling, authorization checks, subject construction, and resource cleanup.
+2. **`**`** -- A short conditional reminder applied broadly: if the file imports Kessel SDK packages, use v1beta2, use ClientBuilder, and don't hardcode credentials.
+
+### Verification
+
+Comment `@coderabbitai configuration` on any PR in your repo to see the fully resolved configuration with source annotations showing which level supplied each value (repository YAML, remote config, defaults).
