@@ -43,8 +43,8 @@ The patterns identified for each application are tracked in [Kessel Integrations
 
 ## Model the permissions
 
-Afterwards, we need to convert permission definitions from [the legacy RBACv1 format](https://github.com/RedHatInsights/rbac-config/tree/master/configs/prod/permissions) to permission definitions expressed using the ksl language.
-These permission definitions are stored in `.ksl` files in the [rbac-config](https://github.com/RedHatInsights/rbac-config/tree/master/configs/stage/schemas/src) repository.
+Afterwards, we need to convert permission definitions from [the legacy RBACv1 format](https://github.com/project-kessel/rbac-config/tree/master/configs/prod/permissions) to permission definitions expressed using the ksl language.
+These permission definitions are stored in `.ksl` files in the [rbac-config](https://github.com/project-kessel/rbac-config/tree/master/configs/stage/schemas/src) repository.
 
 The `@rbac.add_v1_based_permission()` extension simplifies the process of converting the legacy RBACv1 permission definitions to Kessel permissions by incorporating support for wildcard permissions.
 
@@ -129,19 +129,19 @@ import hbi
 @hbi.expose_host_permission(v2_perm: 'patch_system_edit', host_perm: 'patch_system_edit');
 ```
 <Aside type="tip" title="Tip: Play with the schema">
-A good way to understand the resulting schema is by tinkering and evaluating different scenarios and test data is by [transpiling the ksl files into a zed schema](https://github.com/RedHatInsights/rbac-config?tab=readme-ov-file#building-the-kessel-schema) and loading it into [SpiceDB Playground](https://play.authzed.com/schema).
+A good way to understand the resulting schema is by tinkering and evaluating different scenarios and test data is by [transpiling the ksl files into a zed schema](https://github.com/project-kessel/rbac-config?tab=readme-ov-file#building-the-kessel-schema) and loading it into [SpiceDB Playground](https://play.authzed.com/schema).
 </Aside>
 
 ### Checking in the permission definitions
 
-Once the `.ksl` file(s) are ready, they need to be added to the [rbac-config](https://github.com/RedHatInsights/rbac-config/tree/master) repository by opening a PR.
-Note that a separate config exists for each environment ([stage](https://github.com/RedHatInsights/rbac-config/tree/master/configs/stage), [prod](https://github.com/RedHatInsights/rbac-config/tree/master/configs/prod)), allowing the change to be tested in stage before being released to prod.
+Once the `.ksl` file(s) are ready, they need to be added to the [rbac-config](https://github.com/project-kessel/rbac-config/tree/master) repository by opening a PR.
+Note that a separate config exists for each environment ([stage](https://github.com/project-kessel/rbac-config/tree/master/configs/stage), [prod](https://github.com/project-kessel/rbac-config/tree/master/configs/prod)), allowing the change to be tested in stage before being released to prod.
 
 There is no need to include the modified zed schema in the PR as an automated job will transpile the new/modified ksl files into a zed schema.
 
 ### Role definitions
 
-Note that the way these permissions are associated with a role remains the same, i.e. via [role files](https://github.com/RedHatInsights/rbac-config/tree/master/configs/prod/roles).
+Note that the way these permissions are associated with a role remains the same, i.e. via [role files](https://github.com/project-kessel/rbac-config/tree/master/configs/prod/roles).
 
 In some cases a completely new permission may be defined in the process of onboarding to Kessel.
 In that case, consider defining this permission in RHEL persona-based roles (e.g. RHEL Viewer) in addition to application-specific roles (e.g. Advisor Viewer).

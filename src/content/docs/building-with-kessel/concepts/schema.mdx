@@ -38,7 +38,7 @@ No changes to Kessel's code or deployment are required.
 
 ## JSON Schema Basics
 
-Kessel uses [JSON Schema (Draft 07)](http://json-schema.org/draft-07/schema) to define resource types and representations. JSON Schema is a standard vocabulary for describing JSON data structures, including:
+Kessel uses [JSON Schema (Draft 07)](https://json-schema.org/draft-07/schema) to define resource types and representations. JSON Schema is a standard vocabulary for describing JSON data structures, including:
 
 - **Types** — String, number, boolean, object, array
 - **Validation rules** — Required fields, formats, ranges, patterns
@@ -48,7 +48,7 @@ Kessel uses [JSON Schema (Draft 07)](http://json-schema.org/draft-07/schema) to 
 **Simple JSON Schema example:**
 ```json
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "hostname": {
@@ -141,7 +141,7 @@ When a resource is reported with a `workspace_id` field in its common representa
 **Example workspace field in common representation schema:**
 ```json
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "workspace_id": {
