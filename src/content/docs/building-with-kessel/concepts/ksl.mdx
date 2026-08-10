@@ -375,10 +375,10 @@ KSL compiles each type to a SpiceDB `definition`. The namespace and type name ar
 | `namespace rbac` + `type workspace` | `definition rbac/workspace` |
 | `namespace drive` + `type document` | `definition drive/document` |
 
-Every KSL relation produces **two** SpiceDB entries:
+How many SpiceDB entries a KSL relation produces depends on its body type:
 
-1. A `relation t_<name>: ...` that stores the raw links (which objects are connected)
-2. A `permission <name> = ...` that computes the result from those links
+- **Direct (self) relations** — those with a `[cardinality type]` body — produce two entries: a `relation t_<name>: ...` that stores the raw links, and a `permission <name> = t_<name>` that exposes it as a queryable permission.
+- **Computed relations** — those whose body is a reference, sub-relation, or boolean expression — produce only a `permission <name> = <expression>` entry. No `t_` relation is emitted.
 
 ```
 definition rbac/workspace {
@@ -395,8 +395,8 @@ definition rbac/workspace {
 In plain terms:
 
 - `relation t_parent: rbac/workspace` stores the raw "this workspace has a parent" link. The `t_` prefix marks it as a raw data relation, not a queryable permission.
-- `permission parent = t_parent` exposes that link as a queryable permission (SpiceDB requires this two-step split).
-- `permission drive_document_view = t_user_grant->drive_document_view + t_parent->drive_document_view` means a workspace grants `drive_document_view` if **either** one of its role bindings grants that permission, **or** its parent workspace grants it. This is how permissions propagate up the workspace hierarchy — granting access at a parent workspace automatically covers all workspaces nested inside it.
+- `permission parent = t_parent` exposes that link as a queryable permission (SpiceDB requires this two-step split for direct relations).
+- `permission drive_document_view = t_user_grant->drive_document_view + t_parent->drive_document_view` is a computed permission — it has no corresponding `t_drive_document_view` relation. It means a workspace grants `drive_document_view` if **either** one of its role bindings grants that permission, **or** its parent workspace grants it. This is how permissions propagate up the workspace hierarchy — granting access at a parent workspace automatically covers all workspaces nested inside it.
 
 ### The `->` operator
 
@@ -601,7 +601,8 @@ A workspace only grants `comments_comment_view` if the user simultaneously has *
 | KSL | SpiceDB | Plain meaning |
 |---|---|---|
 | `namespace drive` + `type document` | `definition drive/document` | Resource type scoped to a namespace |
-| `relation foo: ...` | `relation t_foo: ...` + `permission foo = t_foo` | Raw link + queryable permission |
+| `relation foo: [Any Bar]` (direct) | `relation t_foo: ...` + `permission foo = t_foo` | Raw link + queryable permission |
+| `relation foo: a or b` (computed) | `permission foo = a + b` only | No `t_` relation emitted |
 | `[bool]` | `rbac/principal:*` | Any principal (wildcard) |
 | `or` | `+` | Union: either satisfies |
 | `and` | `&` | Intersection: both required |
